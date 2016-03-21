@@ -1,0 +1,381 @@
+/*
+    Variables
+*/
+
+:root {
+    --color-primary: #3f51b5;
+    --color-off: rgba(0, 0, 0, 0.26);
+    --color-off-focused: rgba(0, 0, 0, 0.38);
+}
+
+
+/*
+    We need a container for positioning the tooltip and other stuff
+    Size the container and for the children just 100% for sizes
+    normaly something like a <label>
+ */
+
+.Range {
+    position: relative;
+    display: inline-block;
+    height: 34px;
+    width: 100%;
+    margin: 0;
+    outline: 0;
+}
+
+.Range-input {
+    appearance: none;
+    user-select: none;
+    box-sizing: border-box;
+    background-color: transparent;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    outline: 0;
+    border: none;
+}
+
+
+/*
+    Some tweaks to normalize input range
+ */
+
+.Range-input:focus,
+.Range-input:hover,
+.Range-input:active {
+    outline: none;
+    background: transparent;
+}
+
+.Range-input::-ms-tooltip {
+    display: none;
+}
+
+.Range-input::-moz-focus-outer {
+    border: 0;
+    background: transparent;
+}
+
+
+/*
+    Thumbs style for the diferent vendors
+    margin-top -thumb height / 2 + track height / 2
+ */
+
+
+/* Webkit */
+.Range-input::-webkit-slider-thumb {
+    position: relative;
+    appearance: none;
+    cursor: ew-resize;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    margin-top: calc(-16px / 2 + 1px);
+    transition: transform 0.18s linear, box-shadow 0.18s linear, border 0.18s linear, background 0.28s linear;
+}
+
+.Range-input:focus:not(:active)::-webkit-slider-thumb {
+    box-shadow: 0 0 0 8px color(var(--color-primary) a(26%));
+}
+
+.Range--active > .Range-input::-webkit-slider-thumb,
+.Range-input:active::-webkit-slider-thumb {
+    transform: scale(1.2);
+}
+
+/* Mozilla */
+.Range-input::-moz-range-thumb {
+    cursor: ew-resize;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    margin-top: calc(-16px / 2 + 1px);
+    transition: transform 0.18s linear, box-shadow 0.18s linear, border 0.18s linear, background 0.28s linear;
+}
+
+.Range-input:focus:not(:active)::-moz-range-thumb {
+    box-shadow: 0 0 0 8px color(var(--color-primary) a(26%));
+}
+
+.Range--active > .Range-input::-moz-range-thumb,
+.Range-input:active::-moz-range-thumb {
+    transform: scale(1.2);
+}
+
+/* Microsoft */
+.Range-input::-ms-thumb {
+    /* IE needs diferent margin-top to align */
+    margin-top: 4px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--color-primary));
+    transition: transform 0.18s linear, box-shadow 0.18s linear, border 0.18s linear, background 0.28s linear;
+}
+
+/*
+    to have focus and active effects the input[text]
+    needs to have the same height as the biggest thumb
+ */
+.Range-input:focus:not(:active)::-ms-thumb {
+    /* revert box-shadow for IE overflow bug */
+    box-shadow: none;
+}
+
+.Range--active > .Range-input::-ms-thumb,
+.Range-input:active::-ms-thumb {
+    /* revert transform for IE  overflow bug */
+    transform: none;
+}
+
+
+/*
+    Track styles for diferent vendors
+ */
+
+.Range-input::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 2px;
+    border: none;
+    border-radius: 2px;
+    background-color: var(--color-off);
+    padding: 0;
+    transition: background 0.28s linear;
+}
+
+.Range-input:focus:not(:active)::-webkit-slider-runnable-track,
+.Range--active > .Range-input::-webkit-slider-runnable-track,
+.Range-input:active::-webkit-slider-runnable-track {
+    background-color: var(--color-off-focused);
+}
+
+.Range-input::-moz-range-track {
+    width: 100%;
+    height: 2px;
+    border: none;
+    border-radius: 2px;
+    background-color: var(--color-off);
+    padding: 0;
+    transition: background 0.28s linear;
+}
+
+.Range-input:focus:not(:active)::-moz-range-track,
+.Range--active > .Range-input::-moz-range-track,
+.Range-input:active::-moz-range-track {
+    background-color: var(--color-off-focused);
+}
+
+.Range-input::-ms-track {
+    color: transparent;
+    border-color: transparent;
+    border: none;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--color-off);
+    transition: background 0.28s linear;
+}
+
+.Range-input:focus:not(:active)::-ms-track,
+.Range--active > .Range-input::-ms-track,
+.Range-input:active::-ms-track {
+    background-color: var(--color-off-focused);
+}
+
+/*
+    Fill the track for Moz and MS.
+    Blink and Webkit needs JS
+*/
+
+.Range-input::-moz-range-progress {
+    background-color: var(--color-primary);
+    height: 2px;
+}
+
+.Range-input::-ms-fill-lower {
+    background-color: var(--color-primary);
+    height: 2px;
+}
+
+/*
+    Input disabled
+*/
+.Range-input:disabled::-webkit-slider-thumb {
+    background-color: #ccc;
+    width: 14px;
+    height: 14px;
+    border: 2px solid white;
+    margin-top: calc(-14px / 2 + 1px);
+    transform: none !important;
+    cursor: not-allowed;
+}
+
+.Range-input:disabled::-moz-range-thumb {
+    background-color: #ccc;
+    width: 14px;
+    height: 14px;
+    border: 2px solid white;
+    margin-top: calc(-14px / 2 + 1px);
+    transform: none !important;
+    cursor: not-allowed;
+}
+
+.Range-input:disabled::-ms-thumb {
+    margin-top: 3px;
+    background-color: #ccc;
+    width: 14px;
+    height: 14px;
+    border: 2px solid white;
+    transform: none !important;
+    cursor: not-allowed;
+}
+
+.Range-input:disabled::-webkit-slider-runnable-track {
+    background: var(--color-off) !important;
+}
+
+.Range-input:disabled::-moz-range-track {
+    background: var(--color-off) !important;
+}
+
+.Range-input:disabled::-ms-track {
+    background: var(--color-off) !important;
+}
+
+.Range-input:disabled::-moz-range-progress {
+    background-color: transparent;
+}
+
+.Range-input:disabled::-ms-fill-lower {
+    background-color: transparent;
+}
+
+/*
+    Tooltip descendent
+ */
+
+.Range-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.6);
+    width: auto;
+    height: 30px;
+    padding: 5px 10px;
+    line-height: 20px;
+    text-align: center;
+    color: white;
+    border-radius: 2px;
+    display: inline-block;
+    font-size: 12px;
+    bottom: 125%;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.18s linear;
+}
+
+.Range-input:disabled + .Range-tooltip {
+    opacity: 0 !important;
+}
+
+.Range--active > .Range-input + .Range-tooltip,
+.Range-input:active + .Range-tooltip,
+.Range-input:hover + .Range-tooltip,
+.Range-input:focus + .Range-tooltip {
+    opacity: 1;
+}
+
+/* Initial modifier */
+
+.Range--initial > .Range-input::-webkit-slider-thumb {
+    border: 2px solid var(--color-off);
+    background-color: white;
+}
+
+.Range--initial > .Range-input:disabled::-webkit-slider-thumb {
+    border: 2px solid white !important;
+    background-color: #ccc;
+}
+
+.Range--initial > .Range-input:focus:not(:active)::-webkit-slider-thumb {
+    box-shadow: 0 0 0 8px color(var(--color-off) a(10%));
+}
+
+.Range--initial > .Range-input:focus:not(:active)::-webkit-slider-thumb,
+.Range--initial.Range--active > .Range-input::-webkit-slider-thumb,
+.Range--initial > .Range-input:active::-webkit-slider-thumb {
+    border-color: var(--color-off-focused);
+}
+
+.Range--initial > .Range-input::-moz-range-thumb {
+    border: 2px solid var(--color-off);
+    background-color: white;
+}
+
+.Range--initial > .Range-input:disabled::-moz-range-thumb {
+    border: 2px solid white !important;
+    background-color: #ccc;
+}
+
+.Range--initial > .Range-input:focus:not(:active)::-moz-range-thumb {
+    box-shadow: 0 0 0 8px color(var(--color-off) a(10%));
+}
+
+.Range--initial > .Range-input:focus:not(:active)::-moz-range-thumb,
+.Range--initial.Range--active > .Range-input::-moz-range-thumb,
+.Range--initial > .Range-input:active::-moz-range-thumb {
+    border-color: var(--color-off-focused);
+}
+
+.Range--initial > .Range-input::-ms-thumb {
+    border: 2px solid var(--color-off);
+    background-color: white;
+}
+
+.Range--initial > .Range-input:focus:not(:active)::-ms-thumb {
+    box-shadow: none;
+}
+
+.Range--initial > .Range-input:focus:not(:active)::-ms-thumb,
+.Range--initial.Range--active > .Range-input::-ms-thumb,
+.Range--initial > .Range-input:active::-ms-thumb {
+    border-color: var(--color-off-focused);
+}
+
+
+/*
+    these styles are for pseudo element tooltips but only chrome supports
+*/
+
+.Range2::-webkit-slider-thumb::after {
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #444;
+    border-radius: 3px;
+    color: white;
+    padding: 5px 10px;
+    content: ' 0 ';
+    opacity: 1;
+    transition: opacity 250ms linear;
+}
+
+.Range2:active::-webkit-slider-thumb::after {
+    opacity: 1;
+}
+
+.Range2:hover::-webkit-slider-thumb::after {
+    opacity: 1;
+}

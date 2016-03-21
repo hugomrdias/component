@@ -1,0 +1,67 @@
+{
+  "name": "halo-range",
+  "version": "1.0.0",
+  "description": "An experimental range component for halo",
+  "license": "MIT",
+  "repository": "hugomrdias/halo-range",
+  "author": "Hugo Dias <mail@hugodias.me> (http://hugodias.me/)",
+  "keywords": [
+    "range",
+    "css"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "release:patch": "npm version patch -m \"chore(release): Bump to %s\"",
+    "release:minor": "npm version minor -m \"chore(release): Bump to %s\"",
+    "release:major": "npm version major -m \"chore(release): Bump to %s\"",
+    "postversion": "git push --follow-tags",
+    "lint:js": "eslint --cache --fix src/*.js",
+    "lint:css": "stylelint src/*.css",
+    "css": "postcss -u postcss-custom-properties -u postcss-color-function -u stylelint -u autoprefixer --autoprefixer.browsers '> 5%' -u postcss-browser-reporter -o test/style.css ./src/style.css",
+    "css:watch": "npm run css -- -w -m",
+    "serve": "browser-sync start --files 'test/*' --server 'test'",
+    "test": "npm run lint:js && npm run lint:css",
+    "start": "npm run serve & watchify index.js -s Component -d -o test/bundle.js -v & npm run css:watch"
+  },
+  "dependencies": {
+    "hyperscript": "1.4.7",
+    "inherits": "2.0.1",
+    "lodash": "4.6.1",
+    "redux": "3.3.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "6.3.3",
+    "browser-sync": "2.11.1",
+    "eslint": "2.4.0",
+    "eslint-config-halo": "1.2.0",
+    "postcss-browser-reporter": "0.4.0",
+    "postcss-cli": "2.4.0",
+    "postcss-color-function": "2.0.0",
+    "postcss-custom-properties": "5.0.0",
+    "stylelint": "4.1.0",
+    "stylelint-config-standard": "2.0.0",
+    "watchify": "3.7.0"
+  },
+  "eslintConfig": {
+    "extends": "halo"
+  },
+  "stylelint": {
+    "extends": "stylelint-config-standard",
+    "rules": {
+      "indentation": 4,
+      "string-quotes": "single",
+      "max-empty-lines": 2,
+      "comment-empty-line-before": [
+        "always",
+        {
+          "except": [
+            "first-nested"
+          ],
+          "ignore": [
+            "stylelint-commands"
+          ]
+        }
+      ]
+    }
+  }
+}
