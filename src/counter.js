@@ -7,7 +7,7 @@ var Counter = Component.create({
         return h('div', [
             h('p', this.props.counter.id + ' ' + this.cid),
             h('button', { onclick: this.props.onIncrement }, '+'),
-            h('button', { onclick: this.props.onDevcrement }, '-'),
+            h('button', { onclick: this.props.onDecrement }, '-'),
             h('div', 'Count: ' + this.props.counter.counter)
         ]);
     }

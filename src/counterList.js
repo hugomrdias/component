@@ -3,17 +3,21 @@
 var Component = require('./component.js');
 var Counter = require('./counter.js');
 var h = require('hyperscript');
-
 var counterList = Component.create({
     componentDidMount: function() {
         var store = this.props.store;
-
+        this.cid = 'counters';
         this.unsubscribe = store.subscribe(function() {
-            this.render({
+            console.log('update counters');
+            this.update({
                 store: store,
-                state: store.getState().counterList
+                state: store.getState().counters
             });
         }.bind(this));
+    },
+
+    componentWillUnmount: function() {
+        this.unsubscribe();
     },
 
     template: function(compose) {
@@ -80,7 +84,6 @@ counterList.reducer = function countersReducer(state, action) {
             counters: []
         };
     }
-    console.debug('ACTION: ', action);
     switch (action.type) {
         case 'ADD_COUNTER':
             return Object.assign({}, state, {
@@ -121,7 +124,7 @@ counterList.reducer = function countersReducer(state, action) {
                     }
 
                     return Object.assign({}, item, {
-                        counter: item.counter--
+                        counter: item.counter - 1
                     });
                 })
             });
