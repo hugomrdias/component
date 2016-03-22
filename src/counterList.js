@@ -3,16 +3,15 @@
 var Component = require('./component.js');
 var Counter = require('./counter.js');
 var h = require('hyperscript');
+
 var counterList = Component.create({
     componentDidMount: function() {
-        var store = this.props.store;
+        var store = Component.store;
+
         this.cid = 'counters';
         this.unsubscribe = store.subscribe(function() {
             console.log('update counters');
-            this.update({
-                store: store,
-                state: store.getState().counters
-            });
+            this.update(store.getState().counters);
         }.bind(this));
     },
 
@@ -21,8 +20,8 @@ var counterList = Component.create({
     },
 
     template: function(compose) {
-        var dispatch = this.props.store.dispatch;
-        var state = this.props.state;
+        var dispatch = Component.dispatch;
+        var state = this.props;
         var add = function() {
             dispatch({
                 type: 'ADD_COUNTER'
@@ -45,7 +44,7 @@ var counterList = Component.create({
     },
 
     counterItemView: function(item, compose) {
-        var dispatch = this.props.store.dispatch;
+        var dispatch = Component.dispatch;
         var remove = function() {
             dispatch({
                 type: 'REMOVE_COUNTER',
@@ -67,11 +66,10 @@ var counterList = Component.create({
 
         return h('div.counter-item', { 'data-id': item.id }, [
             h('button.remove', { onclick: remove }, 'Remove'),
-            compose(Counter, {
-                counter: item,
+            compose(Counter, item, {
                 onIncrement: inc,
                 onDecrement: dec
-            }, item.id),
+            }),
             h('hr')
         ]);
     }

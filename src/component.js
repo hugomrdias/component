@@ -3,13 +3,6 @@ var uniqueId = require('lodash/uniqueId');
 var noop = require('lodash/noop');
 var assign = require('lodash/assign');
 var inherits = require('inherits');
-var isEqual = require('lodash/isEqualWith');
-var isFunction = require(('lodash/isFunction'));
-var customizer = function(obj1, obj2) {
-    if (isFunction(obj1) && isFunction(obj2)) {
-        return true;
-    }
-};
 
 function Component() {
     this.componentName = 'component';
@@ -39,16 +32,14 @@ Component.prototype.template = noop;
 
 Component.prototype.afterRender = noop;
 
-Component.prototype.componentWillMount = function() {
-};
-Component.prototype.componentDidMount = function() {
-};
+Component.prototype.componentWillMount = function() {};
 
-Component.prototype.componentWillUnmount = function() {
-};
+Component.prototype.componentDidMount = function() {};
+
+Component.prototype.componentWillUnmount = function() {};
 
 Component.prototype.shouldUpdate = function(props) {
-    if (isEqual(this.props, props, customizer)) {
+    if (this.props === props) {
         return false;
     }
     return true;
@@ -56,8 +47,9 @@ Component.prototype.shouldUpdate = function(props) {
 
 Component.prototype.unmount = function() {
     window.cancelAnimationFrame(this.raf);
-    this.componentWillUnmount();
     this._clean();
+    this.componentWillUnmount();
+    this.isMounted = false;
     console.log('Unmount', this.cid);
 };
 
@@ -68,7 +60,7 @@ Component.prototype._clean = function() {
     this._components = [];
 };
 
-function compose(component, props, key) {
+function compose(component, props, handlers) {
     var instance;
 
     if (component instanceof Component) {
@@ -80,11 +72,16 @@ function compose(component, props, key) {
     }
 
     this._components.push(instance);
-    return instance.render(props);
+    return instance.render(props, handlers);
 }
 
-Component.prototype.update = function(props) {
+Component.prototype.update = function(props, handlers) {
     var newRoot;
+
+    console.debug('Update: ', this.cid, this.props);
+    if (typeof handlers !== 'undefined') {
+        this.handlers = handlers;
+    }
 
     if (this.isMounted) {
         if (this.shouldUpdate(props)) {
@@ -96,19 +93,22 @@ Component.prototype.update = function(props) {
             this.root = newRoot;
             // console.log('Updated: ', this.cid, this.props);
         } else {
-            console.log('Skiped render: ', this.cid);
+            console.log('Skiped: ', this.cid);
         }
     } else {
-        console.error('Why update when not mounted?');
+        console.error('Why update when not mounted? ', this.cid);
     }
 };
 
-Component.prototype.render = function(props, key) {
+Component.prototype.render = function(props, handlers) {
     window.cancelAnimationFrame(this.raf);
+
+    console.debug('Render: ', this.cid, this.props);
     if (this.isMounted) {
         console.error('Render again?');
     }
     this.props = props;
+    this.handlers = handlers;
     this.componentWillMount();
     this.root = this.template(compose.bind(this));
     // pass

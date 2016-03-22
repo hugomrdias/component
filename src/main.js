@@ -1,13 +1,17 @@
 'use strict';
 
 var redux = require('redux');
+var Component = require('./component');
 var applyMiddleware = redux.applyMiddleware;
-var CounterList = require('./counterList.js');
+var combineReducers = redux.combineReducers;
 var App = require('./app.js');
+var CounterList = require('./counterList.js');
+var List = require('./nesting/list.js');
 
-var reducer = redux.combineReducers({
+var reducer = combineReducers({
     examples: App.reducer,
-    counters: CounterList.reducer
+    counters: CounterList.reducer,
+    list: List.reducer
 });
 
 function logger(store) {
@@ -28,12 +32,11 @@ function logger(store) {
 }
 
 var store = redux.createStore(reducer, applyMiddleware(logger));
+Component.store = store;
+Component.dispatch = store.dispatch;
 
 var app = new App();
 
 var root = document.getElementById('root');
 
-root.appendChild(app.render({
-    store: store,
-    state: store.getState().examples
-}));
+root.appendChild(app.render(store.getState().examples));
