@@ -1,9 +1,9 @@
 {
-  "name": "halo-range",
+  "name": "component",
   "version": "1.0.0",
-  "description": "An experimental range component for halo",
+  "description": "An experimental component implementation to render DOM",
   "license": "MIT",
-  "repository": "hugomrdias/halo-range",
+  "repository": "hugomrdias/component",
   "author": "Hugo Dias <mail@hugodias.me> (http://hugodias.me/)",
   "keywords": [
     "range",
