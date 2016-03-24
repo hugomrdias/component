@@ -1,12 +1,11 @@
 'use strict';
 
-var Component = require('./../src/component.js');
-var Counters = {}; //require('./counterList.js');
-var List = require('./nesting/list.js');
 var h = require('hyperscript');
-
-var creators = require('./reducerApp.js').boundCreators(Component.dispatch);
-
+var Component = require('./../src/component.js');
+var Counters = require('./counter-list/counter-list.js');
+var List = require('./nesting/nesting.js');
+var action = require('./store.js').action;
+var actions = require('./actions.js');
 var App = Component.create({
     componentDidMount: function() {
         var store = Component.store;
@@ -16,17 +15,18 @@ var App = Component.create({
             this.update(store.getState().examples);
         }.bind(this));
     },
+
     render: function(compose) {
         return h('div', [
             h('span', 'Choose:'),
             h('a', {
-                onclick: () => creators.changeExample('home')
+                onclick: action({ type: 'CHANGE_EXAMPLE', example: 'home' })
             }, 'Home'),
             h('a', {
-                onclick: () => creators.changeExample('counters')
+                onclick: action(actions.changeExample, 'counters')
             }, 'Counters'),
             h('a', {
-                onclick: () => creators.changeExample('list')
+                onclick: action(actions.changeExample, 'list')
             }, 'List'),
             h('hr'),
             this.chooseExamples(compose)

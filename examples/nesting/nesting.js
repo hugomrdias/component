@@ -1,7 +1,10 @@
 'use strict';
 var h = require('hyperscript');
 var Component = require('./../../src/component.js');
-var Counter = require('./listCounter.js');
+var Counter = require('./nesting-item.js');
+var action = require('./../store.js').action;
+var actions = require('./actions-nesting.js');
+
 var List = Component.create({
     init: function() {
         this.componentName = 'list';
@@ -13,9 +16,7 @@ var List = Component.create({
             this.update(store.getState().list);
         }.bind(this));
 
-        Component.dispatch({
-            type: '@@LIST_INIT'
-        });
+        action({ type: '@@LIST_INIT' })();
     },
 
     componentWillUnmount: function() {
@@ -29,7 +30,7 @@ var List = Component.create({
     render: function(compose) {
         return h('div#list', this.props.map(function(counter) {
             return compose(Counter, counter, {
-                onIncrement: List.actions.increment(counter.id)
+                onIncrement: action(actions.increment, counter.id)
             });
         }));
     }

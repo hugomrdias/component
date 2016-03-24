@@ -1,4 +1,11 @@
 'use strict';
+var actionTypes = exports.actionTypes = {
+    ADD_COUNTER: 'ADD_COUNTER',
+    RESET_COUNTER: 'RESET_COUNTER',
+    REMOVE_COUNTER: 'REMOVE_COUNTER',
+    INCREMENT_COUNTER: 'INCREMENT_COUNTER',
+    DECREMENT_COUNTER: 'DECREMENT_COUNTER'
+};
 
 exports.reducer = function countersReducer(state, action) {
     if (typeof state === 'undefined') {
@@ -8,7 +15,7 @@ exports.reducer = function countersReducer(state, action) {
         };
     }
     switch (action.type) {
-        case 'ADD_COUNTER':
+        case actionTypes.ADD_COUNTER:
             return Object.assign({}, state, {
                 nextId: state.nextId + 1,
                 counters: state.counters.concat({
@@ -16,18 +23,18 @@ exports.reducer = function countersReducer(state, action) {
                     id: state.nextId
                 })
             });
-        case 'RESET_COUNTER':
+        case actionTypes.RESET_COUNTER:
             return Object.assign({}, state, {
                 nextId: 1,
                 counters: []
             });
-        case 'REMOVE_COUNTER':
+        case actionTypes.REMOVE_COUNTER:
             return Object.assign({}, state, {
                 counters: state.counters.filter(function(item) {
                     return item.id !== action.id;
                 })
             });
-        case 'INCREMENT_COUNTER':
+        case actionTypes.INCREMENT_COUNTER:
             return Object.assign({}, state, {
                 counters: state.counters.map(function(item) {
                     if (item.id !== action.id) {
@@ -39,7 +46,7 @@ exports.reducer = function countersReducer(state, action) {
                     });
                 })
             });
-        case 'DECREMENT_COUNTER':
+        case actionTypes.DECREMENT_COUNTER:
             return Object.assign({}, state, {
                 counters: state.counters.map(function(item) {
                     if (item.id !== action.id) {

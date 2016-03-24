@@ -1,9 +1,9 @@
 'use strict';
 
-var Component = require('./component.js');
+var Component = require('./../../src/component.js');
 var h = require('hyperscript');
 var Counter = Component.create({
-    template: function() {
+    render: function() {
         return h('div', [
             h('p', this.props.id + ' ' + this.cid),
             h('button', { onclick: this.handlers.onIncrement }, '+'),

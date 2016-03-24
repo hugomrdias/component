@@ -1,6 +1,6 @@
 'use strict';
 var Component = require('./../src/component');
-var Store = require('./store.js');
+var Store = require('./store.js').store;
 var root = document.getElementById('root');
 var App;
 

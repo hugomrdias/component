@@ -15,7 +15,9 @@ Check the examples and code in the test folder.
 
 
 ## Todo
-- [ ] dark modifier
+- [ ] signals
+- [ ] reconsider compose
+- [ ] save composed Components references with a key
 
 ## Related
 - [Redux]()
