@@ -10,7 +10,8 @@ function Component() {
     this.root = null;
     this.container = null;
     this.isMounted = false;
-    this.raf = null;
+    this.rafMount = null;
+    this.rafUpdate = null;
     this._components = [];
     this.init();
     this.cid = uniqueId(this.componentName + '_');
@@ -28,7 +29,7 @@ Component.create = function(proto) {
 
 Component.prototype.init = noop;
 
-Component.prototype.template = noop;
+Component.prototype.render = noop;
 
 Component.prototype.afterRender = noop;
 
@@ -38,17 +39,22 @@ Component.prototype.componentDidMount = function() {};
 
 Component.prototype.componentWillUnmount = function() {};
 
-Component.prototype.shouldUpdate = function(props) {
-    if (this.props === props) {
+Component.prototype.componentWillUpdate = function() {};
+
+Component.prototype.componentDidUpdate = function() {};
+
+Component.prototype.shouldComponentUpdate = function(nextProps) {
+    if (this.props === nextProps) {
         return false;
     }
     return true;
 };
 
 Component.prototype.unmount = function() {
-    window.cancelAnimationFrame(this.raf);
-    this._clean();
+    window.cancelAnimationFrame(this.rafMount);
+    window.cancelAnimationFrame(this.rafUpdate);
     this.componentWillUnmount();
+    this._clean();
     this.isMounted = false;
     console.log('Unmount', this.cid);
 };
@@ -72,48 +78,56 @@ function compose(component, props, handlers) {
     }
 
     this._components.push(instance);
-    return instance.render(props, handlers);
+    return instance.mount(props, handlers);
 }
 
-Component.prototype.update = function(props, handlers) {
+Component.prototype.update = function(nextProps, handlers) {
     var newRoot;
+    var prevProps;
 
-    console.debug('Update: ', this.cid, this.props);
+    window.cancelAnimationFrame(this.rafUpdate);
     if (typeof handlers !== 'undefined') {
         this.handlers = handlers;
     }
 
     if (this.isMounted) {
-        if (this.shouldUpdate(props)) {
-            this.props = props;
-            this.container = this.root.parentNode;
+        if (this.shouldComponentUpdate(nextProps)) {
+            this.componentWillUpdate(nextProps);
+            console.debug('Update: ', this.cid, nextProps);
             this._clean();
-            newRoot = this.template(compose.bind(this));
+            prevProps = this.props;
+            this.props = nextProps;
+            // Replace DOM
+            this.container = this.root.parentNode;
+            newRoot = this.render(compose.bind(this));
             this.container.replaceChild(newRoot, this.root);
             this.root = newRoot;
-            // console.log('Updated: ', this.cid, this.props);
+            // Send update to the next tick
+            this.rafUpdate = window.requestAnimationFrame(function() {
+                this.componentDidUpdate(prevProps);
+            }.bind(this));
         } else {
             console.log('Skiped: ', this.cid);
         }
     } else {
-        console.error('Why update when not mounted? ', this.cid);
+        console.warn('Why update when not mounted? ', this.cid);
     }
 };
 
-Component.prototype.render = function(props, handlers) {
-    window.cancelAnimationFrame(this.raf);
+Component.prototype.mount = function(props, handlers) {
+    window.cancelAnimationFrame(this.rafMount);
 
-    console.debug('Render: ', this.cid, this.props);
+    console.debug('Render: ', this.cid, props);
     if (this.isMounted) {
         console.error('Render again?');
     }
     this.props = props;
     this.handlers = handlers;
     this.componentWillMount();
-    this.root = this.template(compose.bind(this));
+    this.root = this.render(compose.bind(this));
     // pass
 
-    this.raf = window.requestAnimationFrame(function() {
+    this.rafMount = window.requestAnimationFrame(function() {
         this.isMounted = true;
         this.componentDidMount();
     }.bind(this));

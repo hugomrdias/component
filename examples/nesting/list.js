@@ -1,6 +1,6 @@
 'use strict';
 var h = require('hyperscript');
-var Component = require('./../component.js');
+var Component = require('./../../src/component.js');
 var Counter = require('./listCounter.js');
 var List = Component.create({
     init: function() {
@@ -16,22 +16,18 @@ var List = Component.create({
         Component.dispatch({
             type: '@@LIST_INIT'
         });
-        // this.unsubscribe();
     },
 
     componentWillUnmount: function() {
         this.unsubscribe();
-        console.log('unsubscribe list')
+        console.log('unsubscribe list');
         // Component.dispatch({
         //     type: '@@LIST_RESET'
         // });
     },
 
-    template: function(compose) {
-        var state = this.props;
-
-        return h('div#list', state.map(function(counter) {
-            console.log(counter)
+    render: function(compose) {
+        return h('div#list', this.props.map(function(counter) {
             return compose(Counter, counter, {
                 onIncrement: List.actions.increment(counter.id)
             });
@@ -59,13 +55,16 @@ List.reducer = function(state, action) {
 
     switch (action.type) {
         case '@@LIST_INIT':
-            return [{
-                id: 0,
-                count: 1
-            }, {
-                id: 1,
-                count: 9999
-            }];
+            if (state.length === 0) {
+                return [{
+                    id: 0,
+                    count: 1
+                }, {
+                    id: 1,
+                    count: 9999
+                }];
+            }
+            return state;
         case '@@LIST_RESET':
             return initialState;
         case '@@LIST_INCREMENT':
