@@ -3,10 +3,17 @@ var ActionTypes = exports.actionsTypes = {
     CHANGE_EXAMPLE: 'CHANGE_EXAMPLE'
 };
 
+exports.changeExample = function(store, example) {
+    store.dispatch({
+        type: ActionTypes.CHANGE_EXAMPLE,
+        example: example
+    });
+};
+
 exports.reducer = function(state, action) {
     if (typeof state === 'undefined') {
         state = {
-            example: ''
+            example: 'counters'
         };
     }
     switch (action.type) {

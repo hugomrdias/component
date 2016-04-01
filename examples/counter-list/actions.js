@@ -4,33 +4,31 @@
 'use strict';
 
 var actionsTypes = require('./reducer-counter-list.js').actionTypes;
-var store = require('./../store.js').store;
-var dispatch = store.dispatch;
 
-exports.addCounter = function() {
-    dispatch({
+exports.addCounter = function(store) {
+    store.dispatch({
         type: actionsTypes.ADD_COUNTER
     });
 };
-exports.resetCounter = function() {
-    dispatch({
+exports.resetCounter = function(store) {
+    store.dispatch({
         type: actionsTypes.RESET_COUNTER
     });
 };
-exports.removeCounter = function(id) {
-    dispatch({
+exports.removeCounter = function(store, id) {
+    store.dispatch({
         type: actionsTypes.REMOVE_COUNTER,
         id: id
     });
 };
-exports.incrementCounter = function(id) {
-    dispatch({
+exports.incrementCounter = function(store, id) {
+    store.dispatch({
         type: actionsTypes.INCREMENT_COUNTER,
         id: id
     });
 };
-exports.decrementCounter = function(id) {
-    dispatch({
+exports.decrementCounter = function(store, id) {
+    store.dispatch({
         type: actionsTypes.DECREMENT_COUNTER,
         id: id
     });

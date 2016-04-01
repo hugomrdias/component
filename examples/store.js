@@ -4,8 +4,7 @@ var redux = require('redux');
 var applyMiddleware = redux.applyMiddleware;
 var combineReducers = redux.combineReducers;
 var compose = redux.compose;
-var thunk = require('redux-thunk').default;
-var bindActionCreators = require('redux').bindActionCreators;
+// var bindActionCreators = require('redux').bindActionCreators;
 // var logger = require('redux-logger');
 
 var logger = function logger(store) {
@@ -32,31 +31,47 @@ var reducerCounterList = require('./counter-list/reducer-counter-list.js').reduc
 var reducer = combineReducers({
     examples: reducerApp,
     counters: reducerCounterList,
-    list: reducerList
+    list: reducerList,
+    form: require('./form/form-reducer.js').reducer
 });
 
-var Store = redux.createStore(reducer, compose(
-    applyMiddleware(thunk, logger),
+// Store
+var store = redux.createStore(reducer, compose(
+    applyMiddleware(logger),
     window.devToolsExtension ? window.devToolsExtension() : function(f) {
         return f;
     }
 ));
 
-exports.store = Store;
-exports.bind = function(creators) {
-    return bindActionCreators(creators, Store.dispatch);
+exports.store = store;
+// exports.bind = function(creators) {
+//     return bindActionCreators(creators, store.dispatch);
+// };
+
+/**
+ * Creates a thunk for a action or actionCreator and partial applies the store
+ * @param  {Object|Function} fn [description]
+ * @return {[type]}      [description]
+ */
+exports.thunk = function(fn) {
+    var slice = Array.prototype.slice;
+    var args = slice.call(arguments, 1);
+
+    if (typeof fn === 'function') {
+        return function() {
+            return fn.apply(this, [store].concat(args.concat(slice.call(arguments, 0))));
+        };
+    }
+    if (typeof fn !== 'object' || fn === null || typeof fn === 'undefined') {
+        throw new Error('action expected an object or a function, instead received ' + (fn === 'null' ? 'null' : typeof fn));
+    }
+
+    if (typeof fn === 'object') {
+        return function() {
+            return store.dispatch(fn);
+        };
+    }
 };
-
-// TODO remove dispatch injection
-// TODO add obj support "simple action" dispatch
-// action(actions.changeExample, 'home')('dhdh');
-// action({ type: 'CENAS' })
-// action({ type: 'CENAS' })()
-
-// dispatch({ type: 'CENAS' })
-
-// function() { dispatch({ type: 'CENAS' }) }
-// (dispatch) => (event) => dispatch({ type: 'CENAS' })
 
 exports.action = function(fn) {
     var slice = Array.prototype.slice;
@@ -73,7 +88,7 @@ exports.action = function(fn) {
 
     if (typeof fn === 'object') {
         return function() {
-            return Store.dispatch(fn);
+            return store.dispatch(fn);
         };
     }
 };

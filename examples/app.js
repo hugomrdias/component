@@ -1,48 +1,60 @@
 'use strict';
 
-var h = require('hyperscript');
-var Component = require('./../src/component.js');
-var Counters = require('./counter-list/counter-list.js');
-var List = require('./nesting/nesting.js');
-var action = require('./store.js').action;
-var actions = require('./actions.js');
+// var h = require('hyperscript');
+// var Component = require('./../src/component.js');
+
+// var List = require('./nesting/nesting.js');
+
+var { Component, h, helpers } = require('./../src/component-snabb.js');
+var { div, span, a, hr } = helpers;
+var thunk = require('./store.js').thunk;
+var changeExample = require('./reducer-app.js').changeExample;
 var App = Component.create({
+    init: function() {
+        this.componentName = 'app';
+    },
     componentDidMount: function() {
         var store = Component.store;
 
-        this.cid = 'app';
         this.unsubscribe = store.subscribe(function() {
             this.update(store.getState().examples);
         }.bind(this));
     },
 
     render: function(compose) {
-        return h('div', [
-            h('span', 'Choose:'),
-            h('a', {
-                onclick: action({ type: 'CHANGE_EXAMPLE', example: 'home' })
-            }, 'Home'),
-            h('a', {
-                onclick: action(actions.changeExample, 'counters')
-            }, 'Counters'),
-            h('a', {
-                onclick: action(actions.changeExample, 'list')
-            }, 'List'),
-            h('hr'),
+        return div('#app', [
+            span('Choose:'),
+            a({
+                on: { click: thunk({ type: 'CHANGE_EXAMPLE', example: 'home' }) }
+            }, ' Home'),
+            a({
+                on: { click: thunk(changeExample, 'counters') }
+            }, ' Counters'),
+            a({
+                onclick: thunk(changeExample, 'list')
+            }, ' List'),
+            a({
+                on: { click: thunk(changeExample, 'form') }
+            }, ' Form'),
+            hr(''),
             this.chooseExamples(compose)
         ]);
     },
 
-    chooseExamples: function(compose) {
+    chooseExamples: function() {
         var state = Component.store.getState();
 
         switch (this.props.example) {
             case 'counters':
-                return compose(Counters, state.counters);
-            case 'list':
-                return compose(List, state.list);
+                var Counters = require('./counter-list/counter-list.js');
+                return h(Counters, { props: state.counters });
+                // case 'list':
+                //     return compose(List, state.list);
             case 'home':
                 return h('div', 'Home');
+            case 'form':
+                var Form = require('./form/form.js');
+                return h(Form, { props: state.form });
             default:
                 return h('div', 'nothing');
         }
