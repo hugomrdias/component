@@ -1,137 +1,222 @@
 'use strict';
+var snabbdom = require('snabbdom');
+var patch = snabbdom.init([
+    require('snabbdom/modules/class'),
+    require('snabbdom/modules/props'),
+    require('snabbdom/modules/attributes'),
+    require('snabbdom/modules/style'),
+    require('snabbdom/modules/eventlisteners')
+]);
+var Signal = require('mini-signals');
 var uniqueId = require('lodash/uniqueId');
 var noop = require('lodash/noop');
 var assign = require('lodash/assign');
 var inherits = require('inherits');
 
 function Component() {
+    if (!(this instanceof Component)) {
+        return new Component();
+    }
     this.componentName = 'component';
     this.props = {};
-    this.root = null;
-    this.container = null;
+    this.vnode = null;
+    this.thunk = false;
+    this.mountedVnode = null;
     this.isMounted = false;
-    this.rafMount = null;
-    this.rafUpdate = null;
-    this._components = [];
+    this.signals = {
+        willMount: new Signal(),
+        didMount: new Signal(),
+        willUpdate: new Signal(),
+        didUpdate: new Signal(),
+        willUnmount: new Signal()
+    };
     this.init();
     this.cid = uniqueId(this.componentName + '_');
+    this.signals.willMount.add(() => console.debug('will mount', this.cid));
+    this.signals.didMount.add(() => console.debug('did mount', this.cid));
+    this.signals.willUpdate.add(() => console.debug('will update', this.cid));
+    this.signals.didUpdate.add(() => console.debug('did update', this.cid));
+    this.signals.willUnmount.add(() => console.debug('will unmount', this.cid));
 }
-
 Component.create = function(proto) {
-    var child = function() {
+    var Child = function() {
+        if (!(this instanceof Component)) {
+            return new Child();
+        }
         Component.apply(this, arguments);
     };
 
-    inherits(child, Component);
-    assign(child.prototype, proto);
-    return child;
+    inherits(Child, Component);
+    assign(Child.prototype, proto);
+    return Child;
 };
 
 Component.prototype.init = noop;
 
 Component.prototype.render = noop;
 
-Component.prototype.afterRender = noop;
+Component.prototype.componentWillMount = noop;
 
-Component.prototype.componentWillMount = function() {};
+Component.prototype.componentDidMount = noop;
 
-Component.prototype.componentDidMount = function() {};
+Component.prototype.componentWillUnmount = noop;
 
-Component.prototype.componentWillUnmount = function() {};
+Component.prototype.componentWillUpdate = noop;
 
-Component.prototype.componentWillUpdate = function() {};
+Component.prototype.componentDidUpdate = noop;
 
-Component.prototype.componentDidUpdate = function() {};
-
-Component.prototype.shouldComponentUpdate = function(nextProps) {
+Component.prototype.shouldComponentUpdate = function(nextProps, handlers, children) {
     if (this.props === nextProps) {
         return false;
     }
     return true;
 };
 
-Component.prototype.unmount = function() {
-    window.cancelAnimationFrame(this.rafMount);
-    window.cancelAnimationFrame(this.rafUpdate);
-    this.componentWillUnmount();
-    this._clean();
-    this.isMounted = false;
-    console.log('Unmount', this.cid);
-};
+function hooks(context, vnode) {
+    var compHooks = vnode.data.hook || {};
+    var proxyHooks = {
+        create: compHooks.create || noop,
+        insert: compHooks.insert || noop,
+        destroy: compHooks.destroy || noop,
+        prepatch: compHooks.prepatch || noop,
+        postpatch: compHooks.postpatch || noop
+    };
 
-Component.prototype._clean = function() {
-    this._components.forEach(function(comp) {
-        comp.unmount();
-    });
-    this._components = [];
-};
-
-function compose(component, props, handlers) {
-    var instance;
-
-    if (component instanceof Component) {
-        instance = component;
-    } else if (component.super_ === Component) {
-        instance = new component();
-    } else {
-        throw new Error('Must be instance of Component or inherit from Component');
+    if (vnode.data.hook) {
+        console.warn('Root vnode already has hooks defined, user defined hook will be proxied.');
     }
 
-    this._components.push(instance);
-    return instance.mount(props, handlers);
+    compHooks.create = function(emptyVNode, vnode) {
+        // console.log('create', context.cid);
+        if (context.thunk) {
+            context.mountedVnode.data.vnode = vnode;
+            context.mountedVnode.elm = vnode.elm;
+        } else {
+            context.mountedVnode = vnode;
+        }
+
+        if (!context.isMounted) {
+            context.signals.willMount.dispatch();
+            context.componentWillMount();
+        }
+
+        proxyHooks.create.apply(null, arguments);
+    };
+    compHooks.insert = function(vnode) {
+        // console.log('insert ', context.cid);
+        if (context.isMounted) {
+            context.signals.didUpdate.dispatch();
+            context.componentDidUpdate();
+        } else {
+            context.isMounted = true;
+            context.signals.didMount.dispatch();
+            context.componentDidMount();
+        }
+        proxyHooks.insert.apply(null, arguments);
+    };
+    compHooks.destroy = function(vnode) {
+        // console.debug('destroy ', context.cid, vnode);
+        if (vnode === context.mountedVnode) {
+            context.signals.willUnmount.dispatch();
+            context.componentWillUnmount();
+            context.isMounted = false;
+        }
+        proxyHooks.destroy.apply(null, arguments);
+    };
+    compHooks.prepatch = function(old, newNode) {
+        // console.debug('prepatch ', context.cid, old, newNode);
+        if (old.instance !== newNode.instance) {
+            // destroy old
+            old.instance.signals.willUnmount.dispatch();
+            old.instance.componentWillUnmount();
+            old.instance.isMounted = false;
+            // mount new
+            newNode.instance.signals.willMount.dispatch();
+            newNode.instance.componentWillMount();
+        }
+        proxyHooks.prepatch.apply(null, arguments);
+    };
+
+    compHooks.postpatch = function(old, newNode) {
+        // console.debug('postpach ', context.cid, newNode);
+        if (old.instance === newNode.instance) {
+            context.signals.didUpdate.dispatch();
+            context.componentDidUpdate();
+        } else {
+            context.isMounted = true;
+            context.signals.didMount.dispatch();
+            context.componentDidMount();
+        }
+        proxyHooks.postpatch.apply(null, arguments);
+    };
+
+    vnode.data.hook = compHooks;
 }
 
-Component.prototype.update = function(nextProps, handlers) {
-    var newRoot;
-    var prevProps;
+Component.prototype.mount = function(props, handlers, children) {
+    // console.debug('Mount: ', this.cid, props);
+    if (this.isMounted) {
+        console.error('Render again?');
+    }
+    this.props = props;
+    this.handlers = handlers;
+    this.children = children;
+    this.vnode = this.render(props, handlers, children);
+    this.vnode.instance = this;
+    if (!this.vnode) {
+        console.warn('empty render ?!?');
+    }
+    hooks(this, this.vnode);
 
-    window.cancelAnimationFrame(this.rafUpdate);
-    if (typeof handlers !== 'undefined') {
-        this.handlers = handlers;
+    return this.vnode;
+};
+
+Component.prototype.update = function(nextProps, handlers, children) {
+    var oldRoot = this.vnode;
+    var vnode;
+
+    // protect update with empty handlers
+    if (!handlers) {
+        handlers = this.handlers;
+    }
+
+    // protect update with empty children
+    if (!children) {
+        children = this.children;
+    }
+
+    // protect update with empty props
+    if (!nextProps) {
+        nextProps = this.props;
     }
 
     if (this.isMounted) {
-        if (this.shouldComponentUpdate(nextProps)) {
-            this.componentWillUpdate(nextProps);
-            console.debug('Update: ', this.cid, nextProps);
-            this._clean();
-            prevProps = this.props;
+        if (this.shouldComponentUpdate(nextProps, handlers, children)) {
+            this.signals.willUpdate.dispatch(nextProps, handlers, children);
+            this.componentWillUpdate(nextProps, handlers, children);
+            // console.debug('Update: ', this.cid, nextProps);
+
+            // update everything
             this.props = nextProps;
-            // Replace DOM
-            this.container = this.root.parentNode;
-            newRoot = this.render(compose.bind(this));
-            this.container.replaceChild(newRoot, this.root);
-            this.root = newRoot;
-            // Send update to the next tick
-            this.rafUpdate = window.requestAnimationFrame(function() {
-                this.componentDidUpdate(prevProps);
-            }.bind(this));
+            this.handlers = handlers;
+            this.children = children;
+
+            // patch DOM
+            vnode = this.render(this.props, this.handlers, this.children);
+            vnode.instance = this;
+            if (!this.vnode) {
+                console.warn('empty render ?!?');
+            }
+            hooks(this, vnode);
+            this.vnode = patch(oldRoot, vnode);
+            this.mountedVnode.data.vnode = this.vnode;
         } else {
-            console.log('Skiped: ', this.cid);
+            console.debug('Skiped: ', this.cid);
         }
     } else {
         console.warn('Why update when not mounted? ', this.cid);
     }
 };
 
-Component.prototype.mount = function(props, handlers) {
-    window.cancelAnimationFrame(this.rafMount);
-
-    console.debug('Render: ', this.cid, props);
-    if (this.isMounted) {
-        console.error('Render again?');
-    }
-    this.props = props;
-    this.handlers = handlers;
-    this.componentWillMount();
-    this.root = this.render(compose.bind(this));
-    // pass
-
-    this.rafMount = window.requestAnimationFrame(function() {
-        this.isMounted = true;
-        this.componentDidMount();
-    }.bind(this));
-    return this.root;
-};
-
-module.exports = Component;
+module.exports.Component = Component;
+module.exports.patch = patch;

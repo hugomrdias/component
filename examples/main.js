@@ -1,14 +1,11 @@
 'use strict';
-// var h = require('./../src/hyperscript.js');
-// var Component = require('./../src/component');
-var { Component, mount } = require('./../src/component-snabb.js');
-var Store = require('./store.js').store;
+var { Component, mount } = require('./../index.js');
+var { store, dispatch } = require('./store.js');
 var root = document.getElementById('root');
 var App;
-Component.store = Store;
-Component.dispatch = Store.dispatch;
+
+Component.store = store;
+Component.dispatch = dispatch;
 
 App = require('./app.js');
-// root.appendChild(new App().mount(Store.getState().examples));
-
-mount(root, App, Store.getState().examples);
+mount(root, App, store.getState().examples);

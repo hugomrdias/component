@@ -1,8 +1,6 @@
 'use strict';
 
-// var h = require('hyperscript');
-// var Component = require('./../../src/component.js');
-var { Component, h } = require('./../../src/component-snabb.js');
+var { Component, h } = require('./../../index.js');
 var store = require('./../store.js');
 var find = require('lodash/find');
 var thunk = store.thunk;

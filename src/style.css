@@ -1,0 +1,14 @@
+.Dropdown {
+    padding: 20px;
+    background: gray;
+    display: none;
+}
+
+.Dropdown li {
+    padding: 10px;
+    background-color: green;
+}
+
+.Dropdown.is-open {
+    display: block;
+}

@@ -1,14 +1,9 @@
 'use strict';
 
-// var h = require('hyperscript');
-// var Component = require('./../src/component.js');
-
-// var List = require('./nesting/nesting.js');
-
-var { Component, h, helpers } = require('./../src/component-snabb.js');
+var { Component, h, helpers } = require('./../index.js');
 var { div, span, a, hr } = helpers;
 var thunk = require('./store.js').thunk;
-var changeExample = require('./reducer-app.js').changeExample;
+var { changeExample, changeOption } = require('./reducer-app.js');
 var App = Component.create({
     init: function() {
         this.componentName = 'app';
@@ -31,11 +26,14 @@ var App = Component.create({
                 on: { click: thunk(changeExample, 'counters') }
             }, ' Counters'),
             a({
-                onclick: thunk(changeExample, 'list')
+                on: { click: thunk(changeExample, 'list') }
             }, ' List'),
             a({
                 on: { click: thunk(changeExample, 'form') }
             }, ' Form'),
+            a({
+                on: { click: thunk(changeExample, 'children') }
+            }, ' Children'),
             hr(''),
             this.chooseExamples(compose)
         ]);
@@ -45,16 +43,28 @@ var App = Component.create({
         var state = Component.store.getState();
 
         switch (this.props.example) {
+            case 'home':
+                return h('div', 'Home');
             case 'counters':
                 var Counters = require('./counter-list/counter-list.js');
                 return h(Counters, { props: state.counters });
-                // case 'list':
-                //     return compose(List, state.list);
-            case 'home':
-                return h('div', 'Home');
+            case 'list':
+                var List = require('./nesting/nesting.js');
+                return h(List, { props: state.list });
             case 'form':
                 var Form = require('./form/form.js');
                 return h(Form, { props: state.form });
+            case 'children':
+                var Children = require('./children/children.js');
+                return h(Children, {
+                    key: 'children',
+                    props: this.props,
+                    on: { onclick: thunk(changeOption) }
+                }, [
+                    h('li#one', 'one'),
+                    h('li#two', 'two'),
+                    h('li#three', 'tree')
+                ]);
             default:
                 return h('div', 'nothing');
         }

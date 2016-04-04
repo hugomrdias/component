@@ -5,6 +5,13 @@ var actionTypes = exports.actionTypes = {
     INCREMENT: '@@LIST_INCREMENT'
 };
 
+exports.increment = function(store, id) {
+    store.dispatch({
+        type: actionTypes.INCREMENT,
+        id: id
+    });
+};
+
 exports.reducer = function(state, action) {
     var initialState = [];
 

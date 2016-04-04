@@ -1,3 +1,4 @@
 'use strict';
 
-var component = window.Component;
+var Main = require('./../examples/main.js');
+module.exports = Main;

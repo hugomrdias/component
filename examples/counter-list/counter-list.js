@@ -1,10 +1,7 @@
 'use strict';
 
-// var h = require('hyperscript');
-// var Component = require('./../../src/component.js');
-
-var { Component, h, reuse } = require('./../../src/component-snabb.js');
-var thunk = require('./../store.js').thunk;
+var { Component, h } = require('./../../index.js');
+var { thunk } = require('./../store.js');
 
 var Counter = require('./counter.js');
 var actions = require('./actions.js');
@@ -26,25 +23,29 @@ var counterList = Component.create({
         this.unsubscribe();
     },
 
-    render: function(compose) {
+    render: function() {
         return h('div#counters', [
             h('button', { on: { click: thunk(actions.addCounter) } }, 'Add'),
             h('button', { on: { click: thunk(actions.resetCounter) } }, 'Reset'),
             h('hr'),
             h('div.counter-list', this.props.counters.map(function(item) {
-                return this.counterItemView(compose, item);
+                return this.counterItemView(item);
             }.bind(this)))
         ]);
     },
 
-    counterItemView: function(compose, item) {
+    counterItemView: function(item) {
         return h('div.counter-item', [
             h('button.remove', {
                 on: { click: thunk(actions.removeCounter, item.id) }
             }, 'Remove'),
-            reuse('counter' + item.id, Counter, item, {
-                onIncrement: thunk(actions.incrementCounter, item.id),
-                onDecrement: thunk(actions.decrementCounter, item.id)
+            h(Counter, {
+                key: 'counter' + item.id,
+                props: item,
+                on: {
+                    onIncrement: thunk(actions.incrementCounter, item.id),
+                    onDecrement: thunk(actions.decrementCounter, item.id)
+                }
             }),
             h('hr')
         ]);

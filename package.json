@@ -21,7 +21,7 @@
     "css:watch": "npm run css -- -w -m",
     "serve": "browser-sync start --files 'test/*' --server 'test'",
     "test": "npm run lint:js && npm run lint:css",
-    "start": "npm run serve & watchify index.js -s Component -d -o test/bundle.js -t [ babelify --presets [ es2015 ] ] -v & npm run css:watch"
+    "start": "npm run serve & watchify test/script.js -s Test -d -o test/bundle.js -t [ babelify --presets [ es2015 ] ] -v & npm run css:watch"
   },
   "dependencies": {
     "hyperscript": "1.4.7",
@@ -33,7 +33,8 @@
     "redux-logger": "2.6.1",
     "redux-thunk": "2.0.1",
     "snabbdom": "0.4.2",
-    "tcomb-validation": "3.0.0"
+    "tcomb-validation": "3.0.0",
+    "halo-dropdown": "hugomrdias/halo-dropdown#master"
   },
   "devDependencies": {
     "autoprefixer": "6.3.3",

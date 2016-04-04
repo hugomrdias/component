@@ -72,23 +72,3 @@ exports.thunk = function(fn) {
         };
     }
 };
-
-exports.action = function(fn) {
-    var slice = Array.prototype.slice;
-    var args = slice.call(arguments, 1);
-
-    if (typeof fn === 'function') {
-        return function() {
-            return fn.apply(this, args.concat(slice.call(arguments, 0)));
-        };
-    }
-    if (typeof fn !== 'object' || fn === null || typeof fn === 'undefined') {
-        throw new Error('action expected an object or a function, instead received ' + (fn === 'null' ? 'null' : typeof fn));
-    }
-
-    if (typeof fn === 'object') {
-        return function() {
-            return store.dispatch(fn);
-        };
-    }
-};

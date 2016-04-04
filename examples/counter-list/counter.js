@@ -1,9 +1,5 @@
 'use strict';
-
-// var Component = require('./../../src/component.js');
-// var h = require('hyperscript');
-
-var { Component, h, reuse } = require('./../../src/component-snabb.js');
+var { Component, h } = require('./../../index.js');
 var Counter = Component.create({
     render: function(props, handlers) {
         return h('div#' + this.cid, [
