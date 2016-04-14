@@ -13,7 +13,6 @@ $ npm install --save halo-range
 ## Usage
 Check the examples and code in the test folder.
 
-
 ## Todo
 - [ ] signals
 - [ ] reconsider compose
