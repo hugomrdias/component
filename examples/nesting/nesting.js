@@ -1,5 +1,5 @@
 'use strict';
-var { Component, h } = require('./../../index.js');
+var { Component, h } = require('./../../src/component-simple.js');
 var { thunk } = require('./../store.js');
 var { increment } = require('./reducer-nesting.js');
 var Counter = require('./nesting-item.js');
@@ -29,6 +29,7 @@ var List = Component.create({
     render: function() {
         return h('div#list', this.props.map(function(counter) {
             return h(Counter, {
+                // key: 'ddddd',
                 props: counter,
                 on: {
                     onIncrement: thunk(increment, counter.id)

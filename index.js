@@ -10,7 +10,7 @@ exports.patch = patch;
 exports.Component = Component;
 exports.reuse = reuse;
 exports.mount = function(elem, comp, state) {
-    var vnode = comp().mount(state);
+    var vnode = comp().create(state);
     var temp = document.createElement('span');
 
     temp.id = 'jaskhdjsahdkjahsdjk';

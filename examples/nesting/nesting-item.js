@@ -1,9 +1,9 @@
 'use strict';
 
-var { Component, h } = require('./../../index.js');
+var { Component, h } = require('./../../src/component-simple.js');
 var Counter = Component.create({
     init: function() {
-        this.componentName = 'counter';
+        this.componentName = 'list_item';
     },
     componentDidMount: function() {
         var store = Component.store;

@@ -1,6 +1,6 @@
 'use strict';
 
-var { Component, h } = require('./../../index.js');
+var { Component, h } = require('./../../src/component-simple.js');
 var store = require('./../store.js');
 var find = require('lodash/find');
 var thunk = store.thunk;

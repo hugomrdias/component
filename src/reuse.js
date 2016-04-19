@@ -26,9 +26,7 @@ function prepatch(oldVnode, vnode) {
 
     if (oldVnode.data.type === vnode.data.type) {
         console.warn('reuse');
-        oldVnode.data.instance.update.apply(
-            oldVnode.data.instance,
-            vnode.data.args);
+        oldVnode.data.instance.update.apply(oldVnode.data.instance, vnode.data.args);
         console.warn('finish reuse');
         patch = oldVnode.data.instance.vnode;
         vnode.data = oldVnode.data;

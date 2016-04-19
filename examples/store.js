@@ -32,7 +32,8 @@ var reducer = combineReducers({
     examples: reducerApp,
     counters: reducerCounterList,
     list: reducerList,
-    form: require('./form/form-reducer.js').reducer
+    form: require('./form/form-reducer.js').reducer,
+    chart: require('./async-chart/async-chart-reducer.js').reducer
 });
 
 // Store

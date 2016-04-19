@@ -194,7 +194,7 @@ Component.prototype.update = function(nextProps, handlers, children) {
         if (this.shouldComponentUpdate(nextProps, handlers, children)) {
             this.signals.willUpdate.dispatch(nextProps, handlers, children);
             this.componentWillUpdate(nextProps, handlers, children);
-            // console.debug('Update: ', this.cid, nextProps);
+            console.debug('Update: ', this.cid, nextProps);
 
             // update everything
             this.props = nextProps;

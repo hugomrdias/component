@@ -1,49 +1,40 @@
 'use strict';
 
-var { Component, h, helpers } = require('./../../index.js');
-var { ul, div, button } = helpers;
-var Dropdown = require('halo-dropdown');
+var { Component, h, helpers } = require('./../../src/component-simple.js');
+var { div } = helpers;
+var item = require('./../components/menu-item.js');
+var menu = require('./../components/menu.js');
+var selectize = require('./../components/selectize.js');
 
 module.exports = Component.create({
     init: function() {
         this.componentName = 'children';
     },
-    componentDidMount: function() {
-        this.dropdown = new Dropdown({
-            toggle: '#toggle',
-            autoClose: false
-        });
-    },
-    componentWillUnmount: function() {
-        this.dropdown.destroy();
-    },
-    render: function(props, handlers, children) {
-        console.log(props, handlers, children);
+
+    render: function(props, { onclick, onselect }, children) {
         return div('#drop', [
-            button({
+            h('span', 'selected: ' + props.selected),
+            h('hr'),
+            menu({}, [
+                item({
+                    selected: props.selected === 'test1',
+                    onClick: () => props.selected === 'test1' ? onclick('') : onclick('test1'),
+                    showIcon: true
+                }, 'test1'),
+                item({
+                    showIcon: true,
+                    onClick: () => onclick('test2'),
+                    selected: props.selected === 'test2'
+                }, 'test2')
+            ]),
+            h('hr'),
+            h('div', 'selected: ' + props.select),
+            h('button', {
                 on: {
-                    click: () => handlers.onclick('three')
+                    click: () => onselect(11)
                 }
-            }, 'change selected'),
-            h('hr'),
-            h('span', 'selected: ' + this.props.selected),
-            h('hr'),
-            button('#toggle', {
-                attrs: { 'data-dropdown': '#drop-children' }
-            }, 'Menu'),
-            ul('#drop-children.Dropdown', children.map(child => {
-                if (child.sel === 'li#one') {
-                    child.data.on = {
-                        click: () => handlers.onclick('two')
-                    };
-                }
-
-                if (child.sel === ('li#' + this.props.selected)) {
-                    child.text = child.text + ' selected';
-                }
-
-                return child;
-            }))
+            }, 'change'),
+            selectize({ onselect, select: props.select })
         ]);
     }
 });

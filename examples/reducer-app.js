@@ -1,7 +1,8 @@
 'use strict';
 var ActionTypes = exports.actionsTypes = {
     CHANGE_EXAMPLE: 'CHANGE_EXAMPLE',
-    CHANGE_OPTION: 'CHANGE_OPTION'
+    CHANGE_OPTION: 'CHANGE_OPTION',
+    CHANGE_SELECT: 'CHANGE_SELECT'
 };
 
 exports.changeExample = function(store, example) {
@@ -18,11 +19,19 @@ exports.changeOption = function(store, selected) {
     });
 };
 
+exports.changeSelect = function(store, selected) {
+    store.dispatch({
+        type: ActionTypes.CHANGE_SELECT,
+        selected: selected
+    });
+};
+
 exports.reducer = function(state, action) {
     if (typeof state === 'undefined') {
         state = {
-            example: 'children',
-            selected: ''
+            example: 'chart',
+            selected: '',
+            select: 1
         };
     }
     switch (action.type) {
@@ -40,6 +49,13 @@ exports.reducer = function(state, action) {
             }
             return Object.assign({}, state, {
                 selected: action.selected
+            });
+        case ActionTypes.CHANGE_SELECT:
+            if (action.selected === state.selected) {
+                return state;
+            }
+            return Object.assign({}, state, {
+                select: action.selected
             });
         default:
             return state;

@@ -1,9 +1,9 @@
 'use strict';
 
-var { Component, h, helpers } = require('./../index.js');
+var { Component, h, helpers } = require('./../src/component-simple.js');
 var { div, span, a, hr } = helpers;
 var thunk = require('./store.js').thunk;
-var { changeExample, changeOption } = require('./reducer-app.js');
+var { changeSelect, changeExample, changeOption } = require('./reducer-app.js');
 var App = Component.create({
     init: function() {
         this.componentName = 'app';
@@ -16,7 +16,7 @@ var App = Component.create({
         }.bind(this));
     },
 
-    render: function(compose) {
+    render: function() {
         return div('#app', [
             span('Choose:'),
             a({
@@ -34,8 +34,11 @@ var App = Component.create({
             a({
                 on: { click: thunk(changeExample, 'children') }
             }, ' Children'),
+            a({
+                on: { click: thunk(changeExample, 'chart') }
+            }, ' Chart'),
             hr(''),
-            this.chooseExamples(compose)
+            this.chooseExamples()
         ]);
     },
 
@@ -54,17 +57,19 @@ var App = Component.create({
             case 'form':
                 var Form = require('./form/form.js');
                 return h(Form, { props: state.form });
+            case 'chart':
+                var Chart = require('./async-chart/async-chart.js');
+                return h(Chart, { key: 'chart', props: state.chart });
             case 'children':
                 var Children = require('./children/children.js');
                 return h(Children, {
                     key: 'children',
                     props: this.props,
-                    on: { onclick: thunk(changeOption) }
-                }, [
-                    h('li#one', 'one'),
-                    h('li#two', 'two'),
-                    h('li#three', 'tree')
-                ]);
+                    on: {
+                        onclick: thunk(changeOption),
+                        onselect: thunk(changeSelect)
+                    }
+                });
             default:
                 return h('div', 'nothing');
         }

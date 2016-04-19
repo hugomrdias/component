@@ -1,8 +1,7 @@
 'use strict';
 
-var { Component, h } = require('./../../index.js');
+var { Component, h } = require('./../../src/component-simple.js');
 var { thunk } = require('./../store.js');
-
 var Counter = require('./counter.js');
 var actions = require('./actions.js');
 
@@ -10,11 +9,11 @@ var counterList = Component.create({
     init: function() {
         this.componentName = 'counters';
     },
+
     componentDidMount: function() {
         var store = Component.store;
 
         this.unsubscribe = store.subscribe(function() {
-            // console.log('update counters');
             this.update(store.getState().counters);
         }.bind(this));
     },
