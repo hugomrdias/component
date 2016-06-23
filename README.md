@@ -14,9 +14,9 @@ $ npm install --save halo-range
 Check the examples and code in the test folder.
 
 ## Todo
-- [*] signals
-- [*] reconsider compose
-- [*] save composed Components references with a key
+- [x] signals
+- [x] reconsider compose
+- [x] save composed Components references with a key
 - [ ] support component instance in the hyperscript
 
 ## Related
