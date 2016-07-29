@@ -5,6 +5,8 @@ var noop = require('lodash/noop');
 var assign = require('lodash/assign');
 var inherits = require('inherits');
 var hyper = require('snabbdom/h');
+var rootHooks = require('./hooks').root;
+var vnodeHooks = require('./hooks').vnode;
 var helpers = require('hyperscript-helpers')(hyper);
 var snabbdom = require('snabbdom');
 var patch = snabbdom.init([
@@ -26,7 +28,7 @@ function Component() {
 
     this.vnode = null;
     this.isMounted = false;
-    this.thunk = null;
+    this.root = null;
 
     this.signals = {
         willMount: new Signal(),
@@ -37,9 +39,9 @@ function Component() {
     };
     this.init();
     this.cid = uniqueId(this.componentName + '_');
-    // this.signals.willMount.add(() => console.debug('will mount', this.cid));
+    this.signals.willMount.add(() => console.debug('will mount', this.cid));
     this.signals.didMount.add(() => console.debug('did mount', this.cid));
-    // this.signals.willUpdate.add(() => console.debug('will update', this.cid));
+    this.signals.willUpdate.add(() => console.debug('will update', this.cid));
     this.signals.didUpdate.add(() => console.debug('did update', this.cid));
     this.signals.willUnmount.add(() => console.debug('will unmount', this.cid));
 }
@@ -82,7 +84,7 @@ Component.prototype.update = function(
     handlers = this.handlers,
     children = this.children
 ) {
-    if (this.thunk === null || !this.isMounted) {
+    if (this.root === null || !this.isMounted) {
         console.warn('Component is unmounted and you are trying to update!', this.cid);
         return this.vnode;
     }
@@ -90,10 +92,10 @@ Component.prototype.update = function(
     if (this.shouldComponentUpdate(nextProps, handlers, children)) {
         this.signals.willUpdate.dispatch(nextProps, handlers, children);
         this.componentWillUpdate(nextProps, handlers, children);
-        // console.debug('Update: ', this.cid, nextProps);
 
         this.prepare(nextProps, handlers, children);
-        patch(this.thunk.data.vnode, this.vnode);
+        patch(this.root.children[0], this.vnode);
+
     } else {
         console.debug('Skiped: ', this.cid);
     }
@@ -105,107 +107,36 @@ Component.prototype.prepare = function(props, handlers, children) {
     this.handlers = handlers;
     this.children = children;
 
+    // console.log('Prepare', this.cid, this.props)
     this.vnode = this.render(this.props, this.handlers, this.children);
     if (!this.vnode) {
         console.warn('empty render ?!?');
     }
 
     // setup didMount and didUpdate
-    hooks(this, this.vnode);
+    vnodeHooks(this, this.vnode);
+
     return this.vnode;
 };
 
 Component.prototype.create = function(props, handlers, children) {
-    this.thunk = hyper('thunk_' + this.cid, {
-        hook: { init: init, prepatch: prepatch, destroy: destroy },
+    var key = 'thunk_' + this.cid;
+    // console.log('CREATE', key);
+
+    return hyper('div#' + key, {
+        key: key,
+        hook: rootHooks,
         instance: this,
         type: this.constructor,
         args: arguments
     });
-
-    return this.thunk;
 };
 
 exports.Component = Component;
 
-function hooks(context, vnode) {
-    var compHooks = vnode.data.hook || {};
-    var proxyHooks = {
-        insert: compHooks.insert || noop,
-        postpatch: compHooks.postpatch || noop
-    };
 
-    if (vnode.data.hook) {
-        console.warn('Root vnode already has hooks defined, user defined hook will be proxied.');
-    }
 
-    compHooks.insert = function(vnode) {
-        // console.log('insert ', context.cid);
-        if (context.isMounted) {
-            context.signals.didUpdate.dispatch();
-            context.componentDidUpdate();
-            context.thunk.data.vnode = vnode;
-        } else {
-            context.isMounted = true;
-            context.signals.didMount.dispatch();
-            context.componentDidMount();
-        }
-        proxyHooks.insert.apply(null, arguments);
-    };
-
-    compHooks.postpatch = function(old, newNode) {
-        // console.debug('postpach ', context.cid, newNode);
-        context.signals.didUpdate.dispatch();
-        context.componentDidUpdate();
-        context.thunk.data.vnode = newNode;
-        proxyHooks.postpatch.apply(null, arguments);
-    };
-
-    vnode.data.hook = compHooks;
-}
-
-function init(vnode) {
-    var instance = vnode.data.instance || vnode.data.type();
-
-    // console.log('INIT thunk', vnode);
-
-    instance.signals.willMount.dispatch();
-    instance.componentWillMount();
-    instance.thunk = vnode;
-
-    vnode.data.vnode = instance.prepare.apply(instance, vnode.data.args);
-    vnode.data.instance = instance;
-}
-
-function prepatch(oldVnode, vnode) {
-    var instance = oldVnode.data.instance;
-    var args = vnode.data.args;
-
-    // console.log('prepatch old', oldVnode);
-    // console.log('prepatch vnode', vnode);
-
-    if (oldVnode.data.type === vnode.data.type) {
-        console.warn('reuse');
-        instance.thunk = vnode;
-
-        vnode.data = oldVnode.data;
-        vnode.data.vnode = instance.update.apply(instance, args);
-        console.warn('finish reuse');
-    } else {
-        console.warn('didnt reuse');
-    }
-}
-
-function destroy(vnode) {
-    var instance = vnode.data.instance;
-
-    instance.signals.willUnmount.dispatch();
-    instance.componentWillUnmount();
-    instance.isMounted = false;
-    instance.thunk = null;
-}
-
-exports.reuse = function(name, fn) {
+exports.reuse = function(key, fn) {
     var i;
     var args = [];
 
@@ -213,14 +144,14 @@ exports.reuse = function(name, fn) {
         args[i - 2] = arguments[i];
     }
 
-    let thunk = hyper('reuse_thunk_' + name, {
-        hook: { init: init, prepatch: prepatch, destroy: destroy },
+    // console.log('WILL RE USE ' + key)
+    return hyper('div#' + key, {
+        key: key,
+        hook: rootHooks,
         instance: null,
         type: fn,
         args: args
     });
-
-    return thunk;
 };
 
 exports.h = function() {

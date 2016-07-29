@@ -5,6 +5,7 @@ var Counter = Component.create({
         // if (props.counter === 1) {
         //     return h('div', 'loading');
         // }
+
         return h('div#' + this.cid, [
             h('p', this.props.id + ' ' + this.cid),
             h('button', { on: { click: handlers.onIncrement } }, '+'),

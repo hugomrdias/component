@@ -39,7 +39,7 @@ var counterList = Component.create({
                 on: { click: thunk(actions.removeCounter, item.id) }
             }, 'Remove'),
             h(Counter, {
-                key: 'counter' + item.id,
+                key: 'counter-item-' + item.id,
                 props: item,
                 on: {
                     onIncrement: thunk(actions.incrementCounter, item.id),

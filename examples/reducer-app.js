@@ -29,7 +29,7 @@ exports.changeSelect = function(store, selected) {
 exports.reducer = function(state, action) {
     if (typeof state === 'undefined') {
         state = {
-            example: 'chart',
+            example: 'counters',
             selected: '',
             select: 1
         };
