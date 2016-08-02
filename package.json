@@ -36,7 +36,7 @@
     "redux-logger": "2.6.1",
     "redux-thunk": "2.0.1",
     "selectize": "0.12.1",
-    "snabbdom": "0.5.1",
+    "snabbdom": "git@github.com:katyo/snabbdom.git#8ca33c9",
     "tcomb-validation": "3.0.0"
   },
   "devDependencies": {

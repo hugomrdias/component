@@ -84,7 +84,9 @@ Component.prototype.update = function(
     handlers = this.handlers,
     children = this.children
 ) {
-    if (this.root === null || !this.isMounted) {
+    var old = this.vnode;
+
+    if (!this.isMounted) {
         console.warn('Component is unmounted and you are trying to update!', this.cid);
         return this.vnode;
     }
@@ -94,8 +96,7 @@ Component.prototype.update = function(
         this.componentWillUpdate(nextProps, handlers, children);
 
         this.prepare(nextProps, handlers, children);
-        patch(this.root.children[0], this.vnode);
-
+        patch(old, this.vnode);
     } else {
         console.debug('Skiped: ', this.cid);
     }
@@ -110,31 +111,19 @@ Component.prototype.prepare = function(props, handlers, children) {
     // console.log('Prepare', this.cid, this.props)
     this.vnode = this.render(this.props, this.handlers, this.children);
     if (!this.vnode) {
-        console.warn('empty render ?!?');
+        console.warn('You need to implement render method and return a vnode!');
     }
 
     // setup didMount and didUpdate
     vnodeHooks(this, this.vnode);
-
     return this.vnode;
 };
 
 Component.prototype.create = function(props, handlers, children) {
-    var key = 'thunk_' + this.cid;
-    // console.log('CREATE', key);
-
-    return hyper('div#' + key, {
-        key: key,
-        hook: rootHooks,
-        instance: this,
-        type: this.constructor,
-        args: arguments
-    });
+    return this.prepare.apply(this, arguments);
 };
 
 exports.Component = Component;
-
-
 
 exports.reuse = function(key, fn) {
     var i;
@@ -144,8 +133,8 @@ exports.reuse = function(key, fn) {
         args[i - 2] = arguments[i];
     }
 
-    // console.log('WILL RE USE ' + key)
-    return hyper('div#' + key, {
+    console.log('WILL RE USE ' + key)
+    return hyper('div#reuse' + key, {
         key: key,
         hook: rootHooks,
         instance: null,
@@ -166,7 +155,8 @@ exports.h = function() {
         if (arguments[1] && arguments[1].key) {
             return exports.reuse(arguments[1].key, component, props, handlers, children);
         }
-        return component().create(props, handlers, children);
+        var instance = component();
+        return instance.create(props, handlers, children);
     }
     return hyper.apply(null, arguments);
 };

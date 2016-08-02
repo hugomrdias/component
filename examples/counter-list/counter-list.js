@@ -34,7 +34,7 @@ var counterList = Component.create({
     },
 
     counterItemView: function(item) {
-        return h('div.counter-item', [
+        return h('div.counter-item', { key: item.id }, [
             h('button.remove', {
                 on: { click: thunk(actions.removeCounter, item.id) }
             }, 'Remove'),

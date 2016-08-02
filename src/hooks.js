@@ -1,48 +1,47 @@
 'use strict';
 var noop = require('lodash/noop');
 
+function copyToThunk(vnode, thunk) {
+    vnode.data.fn = thunk.data.fn;
+    vnode.data.args = thunk.data.args;
+    thunk.data = vnode.data;
+    thunk.children = vnode.children;
+    thunk.text = vnode.text;
+    thunk.elm = vnode.elm;
+    thunk.sel = vnode.sel;
+    // thunk.custom = 'CUSTOM';
+}
+
 exports.root = {
-    init: function init(vnode) {
-        var instance = vnode.data.instance || vnode.data.type();
-
-        // console.log('INIT thunk', vnode);
-
+    init: function init(thunk) {
+        var instance = thunk.data.instance || thunk.data.type();
+        instance.key = thunk.key;
+        var vnode = instance.prepare.apply(instance, thunk.data.args);
+        console.log('INIT thunk', vnode, thunk);
+        copyToThunk(vnode, thunk)
+        instance.vnode = thunk;
         instance.signals.willMount.dispatch();
         instance.componentWillMount();
-        instance.root = vnode;
-
-        vnode.children = [instance.prepare.apply(instance, vnode.data.args)];
-        vnode.data.instance = instance;
     },
 
     prepatch: function prepatch(oldVnode, vnode) {
         var instance = oldVnode.data.instance;
         var args = vnode.data.args;
 
-        // console.log('PREPATCH', oldVnode.data.instance.cid, vnode.data.instance.cid);
-        // console.log('prepatch vnode', vnode);
+        // console.log('PREPATCH', clone(oldVnode), clone(vnode));
 
         if (oldVnode.data.type === vnode.data.type) {
-            console.warn('reuse', oldVnode.data.instance.cid, oldVnode.data);
+            console.warn('reuse');
 
-            vnode.data = oldVnode.data;
-            vnode.children = [instance.update.apply(instance, args)];
-            instance.root = vnode;
+            var vnode2 = instance.update.apply(instance, args);
+            copyToThunk(vnode2, vnode)
+            instance.vnode = vnode;
             console.warn('finish reuse');
         } else {
             console.warn('didnt reuse');
         }
     },
 
-    destroy: function destroy(vnode) {
-        var instance = vnode.data.instance;
-
-        instance.signals.willUnmount.dispatch();
-        instance.componentWillUnmount();
-        instance.isMounted = false;
-        instance.root = null;
-        // instance.vnode = null;
-    }
 };
 
 exports.vnode = function hooks(context, vnode) {
@@ -56,12 +55,22 @@ exports.vnode = function hooks(context, vnode) {
         console.warn('Root vnode already has hooks defined, user defined hook will be proxied.');
     }
 
+    vnode.data.instance = context;
+    vnode.data.type = context.constructor;
+    vnode.key = context.key;
+
+    compHooks.init = function init(vnode) {
+        console.debug('init')
+        context.signals.willMount.dispatch();
+        context.componentWillMount();
+    };
+
     compHooks.insert = function(vnode) {
-        console.debug('insert ', context.cid);
+        console.debug('insert ', context.cid, vnode);
         if (context.isMounted) {
             context.signals.didUpdate.dispatch();
             context.componentDidUpdate();
-            context.root.children[0] = vnode;
+            // context.vnode = vnode;
         } else {
             context.isMounted = true;
             context.signals.didMount.dispatch();
@@ -71,12 +80,18 @@ exports.vnode = function hooks(context, vnode) {
     };
 
     compHooks.postpatch = function(old, newNode) {
-        // console.debug('postpatch ', context.cid, newNode);
+        console.debug('postpatch ', context.cid, newNode);
         context.signals.didUpdate.dispatch();
         context.componentDidUpdate();
-        context.root.children[0] = newNode;
+        // context.root.children[0] = newNode;
         proxyHooks.postpatch.apply(null, arguments);
     };
+
+    compHooks.destroy = function destroy(vnode) {
+        context.signals.willUnmount.dispatch();
+        context.componentWillUnmount();
+        context.isMounted = false;
+    }
 
     vnode.data.hook = compHooks;
 }
