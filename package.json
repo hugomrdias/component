@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "halo-dropdown": "hugomrdias/halo-dropdown#master",
-    "highcharts": "4.2.4",
+    "highcharts": "8.1.2",
     "hyperscript": "1.4.7",
     "hyperscript-helpers": "2.1.1",
     "inherits": "2.0.1",
