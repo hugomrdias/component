@@ -29,7 +29,7 @@
     "hyperscript": "1.4.7",
     "hyperscript-helpers": "2.1.1",
     "inherits": "2.0.1",
-    "jquery": "2.2.3",
+    "jquery": "3.5.1",
     "lodash": "4.6.1",
     "mini-signals": "1.1.1",
     "redux": "3.3.1",
